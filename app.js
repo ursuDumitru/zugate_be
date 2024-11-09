@@ -17,33 +17,29 @@ app.use(cors());
 
 // Route to handle PDF file upload and extract text from it
 app.post('/upload', upload.single('pdf'), (req, res) => {
+    const { numQuestions, numAnswers } = req.body;
+
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const pdfPath = path.join(process.cwd(), 'uploads', req.file.filename);  // Changed to process.cwd() for cross-platform compatibility
+    const pdfPath = path.join(process.cwd(), 'uploads', req.file.filename);
 
     extractTextFromPDF(pdfPath)
         .then(async (text) => {
             extractedText = text;
-            console.log('Extracted Text:', extractedText);
 
-            // Send the extracted text to Mistral API
             try {
-                const mistralResponse = await getMistralResponse(extractedText);
-                console.log('Response from Mistral:', mistralResponse);
-
+                const quiz = await getMistralResponse(extractedText, numQuestions, numAnswers);
                 res.json({
-                    message: 'File uploaded and text processed by Mistral API!',
-                    mistralResponse,
+                    message: 'Quiz generated successfully!',
+                    quiz,
                 });
             } catch (error) {
-                console.error('Error with Mistral API:', error);
                 res.status(500).json({ message: 'Error processing with Mistral API', error });
             }
         })
         .catch((error) => {
-            console.error('Error extracting text from PDF:', error);
             res.status(500).json({ message: 'Error processing PDF', error });
         });
 });
