@@ -8,7 +8,7 @@ import fs from 'fs';
 // Define multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Save files in the "uploads" directory
+    cb(null, 'uploads/courses_full/'); // Save files in the "uploads" directory
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 
     // Check if a file with the same name already exists
     let counter = 1;
-    while (fs.existsSync(path.join('uploads', fileNameToSave))) {
+    while (fs.existsSync(path.join('uploads/courses_full', fileNameToSave))) {
       fileNameToSave = fileName + '_received_' + counter + ext; // Append number to filename
       counter++;
     }
