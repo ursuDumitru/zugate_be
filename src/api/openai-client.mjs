@@ -22,17 +22,14 @@ const getOpenAIResponse = async (jsonData, numQuestions, numAnswers, baseFileNam
         try {
             attempt++;
 
-            // const randomSentences = getRandomSentences(jsonData, X);
             const sentences = JSON.stringify(jsonData);
-
-            console.log('DIMA : ', numQuestions)
 
             result = await openai.chat.completions.create({
                 model: "gpt-4o-mini",  // GPT-4 model
                 messages: [{
                     role: "user",  // Ensure that role is explicitly set to "user"
                     content: `Eu sunt un profesor, acesta este un text dintr-un curs de al meu despre care vreau să fac un quiz : \n\n${sentences}\n\n
-            Quiz-ul dat va avea ${numQuestions} intrebari, fiecare cu cate ${numAnswers} variante de raspuns.
+            Quiz-ul dat va avea ${numQuestions} intrebari, fiecare intrebare va avea ${numAnswers} variante de raspuns, 1 adevarata si restul false.
             Quizul va avea forma JSON, astfel:
             {
                 "questions": [
@@ -42,8 +39,7 @@ const getOpenAIResponse = async (jsonData, numQuestions, numAnswers, baseFileNam
                         "options": [
                             "Răspuns corect",
                             "Răspuns incorect 1",
-                            "Răspuns incorect 2",
-                            "Răspuns incorect 3"
+                            "...",
                         ]
                     },
                     ...

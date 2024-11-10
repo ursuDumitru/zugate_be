@@ -26,7 +26,6 @@ app.post('/uploads', upload.single('pdf'), async (req, res) => {
         const baseFileName = path.basename(splitJsonPath, '_split.json');
         const jsonData = JSON.parse(await fs.readFile(splitJsonPath, 'utf8'));
         const quizFilePath = await getOpenAIResponse(jsonData, quizQuestions, responsesPerQuestion, baseFileName);
-        console.log('DIMA3')
 
         res.json({ message: 'Quiz generated and saved successfully!', quizFilePath });
     } catch (error) {
