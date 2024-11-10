@@ -1,7 +1,9 @@
 import Lesson from '../models/Lesson.js';
 import Class from '../models/Class.js';
+import Feedback from '../models/Feedback.js';
 import { extractTextFromPDF } from '../src/preprocess-pdf/extract-pdf-text.mjs';
 import { getOpenAIResponse } from '../src/api/openai-client.mjs';
+import { getOpenAIFeedbackSummarize } from '../src/api/feedback-summarize.mjs';
 import Quiz from '../models/Quiz.js';
 import Grade from '../models/Grade.js';
 import path from 'path';
@@ -585,4 +587,37 @@ export const getPresentStudents = async (req, res) => {
     console.error('Eroare la obținerea studenților prezenți:', error);
     res.status(500).json({ message: 'Eroare de server la obținerea studenților prezenți' });
   }
+};
+
+export const getFeedback = async (req, res) => {
+    const { lessonId } = req.body;
+
+    console.log('DIMA Retrieving feedback for lesson:', lessonId);
+
+    try {
+        // Check if the lesson exists
+        const lesson = await Lesson.findById(lessonId);
+        if (!lesson) {
+            return res.status(404).json({ error: 'Lesson not found' });
+        }
+
+        // Retrieve all feedback for the specified lesson
+        const feedbacks = await Feedback.find({ lesson: lessonId }).populate('student');
+
+        if (feedbacks.length === 0) {
+            return res.status(404).json({ message: 'No feedback available for this lesson' });
+        }
+
+        // Concatenate all feedbackText from the retrieved feedback
+        const concatenatedFeedback = feedbacks.map(feedback => feedback.feedbackText).join(' ');
+
+        // Use the OpenAI summarization function
+        const summary = await getOpenAIFeedbackSummarize(concatenatedFeedback);
+
+        // Send the summary as the response
+        res.status(200).json({ lesson: lessonId, summary });
+    } catch (error) {
+        console.error('Error retrieving feedback:', error);
+        res.status(500).json({ error: 'An error occurred while retrieving feedback' });
+    }
 };
