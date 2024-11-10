@@ -13,6 +13,7 @@ import StudentQuizResult from '../models/StudentQuizResult.js';
 import { OpenAI } from 'openai';
 import Attendance from '../models/Attendance.js';
 import dotenv, { config } from 'dotenv';
+import { getOpenAIFeedbackSummarize } from '../utils/openai';
 import User from '../models/User.js';
 config();
 
@@ -590,37 +591,36 @@ export const getPresentStudents = async (req, res) => {
 };
 
 export const getFeedback = async (req, res) => {
-  const { lessonId } = req.query; // Preia din query params
-
-  console.log('Retrieving feedback for lesson:', lessonId);
+  const { lessonId } = req.query;
 
   try {
-      // Verifică dacă lecția există
-      const lesson = await Lesson.findById(lessonId);
-      if (!lesson) {
-          return res.status(404).json({ error: 'Lesson not found' });
-      }
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
 
-      // Recuperează toate feedback-urile pentru lecția specificată
-      const feedbacks = await Feedback.find({ lesson: lessonId }).populate('student');
+    const feedbacks = await Feedback.find({ lesson: lessonId }).populate('student');
 
-      if (feedbacks.length === 0) {
-          return res.status(404).json({ message: 'No feedback available for this lesson' });
-      }
+    if (feedbacks.length === 0) {
+      return res.status(404).json({ message: 'No feedback available for this lesson' });
+    }
 
-      // Concatenează toate feedbackText din feedback-urile recuperate
-      const concatenatedFeedback = feedbacks.map(feedback => feedback.feedbackText).join(' ');
-
-      // Utilizează funcția de sumarizare OpenAI
+    const concatenatedFeedback = feedbacks.map(feedback => feedback.feedbackText).join(' ');
+    
+    try {
       const summaryResponse = await getOpenAIFeedbackSummarize(concatenatedFeedback);
-
-      // Extrage doar textul sumarului din răspunsul OpenAI
       const summary = summaryResponse.choices[0].message.content.trim();
-
-      // Trimite sumarul ca răspuns
-      res.status(200).json({ lesson: lessonId, summary });
+      
+      res.status(200).json({ 
+        lesson: lessonId, 
+        summary: summary  // Sending just the summary text
+      });
+    } catch (openAIError) {
+      console.error('OpenAI Error:', openAIError);
+      res.status(500).json({ message: 'Error generating feedback summary' });
+    }
   } catch (error) {
-      console.error('Error retrieving feedback:', error);
-      res.status(500).json({ error: 'An error occurred while retrieving feedback' });
+    console.error('Error retrieving feedback:', error);
+    res.status(500).json({ message: 'An error occurred while retrieving feedback' });
   }
 };
