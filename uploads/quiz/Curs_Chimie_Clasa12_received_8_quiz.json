@@ -1,0 +1,113 @@
+{
+  "questions": [
+    {
+      "question": "Ce este o reacție chimică?",
+      "sentenceIDs": [
+        2
+      ],
+      "options": [
+        "Un proces în care substanțele se transformă în altele noi.",
+        "Un proces fizic de amestecare a substanțelor.",
+        "Un proces care nu implică modificări chimice.",
+        "Un tip de reacție care nu afectează materia."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Care dintre următoarele reacții este o reacție de sinteză?",
+      "sentenceIDs": [
+        4
+      ],
+      "options": [
+        "A + B → AB",
+        "AB → A + B",
+        "AB + CD → AD + CB",
+        "A + B → A⁺ + B⁻"
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Care factor nu influențează viteza reacției chimice?",
+      "sentenceIDs": [
+        6,
+        12,
+        13,
+        14,
+        15
+      ],
+      "options": [
+        "Concentrația reactanților",
+        "Temperatura",
+        "Suprafața de contact",
+        "Tipul de recipiente utilizate"
+      ],
+      "correctAnswerIndex": 3
+    },
+    {
+      "question": "Ce este energia de activare?",
+      "sentenceIDs": [
+        17
+      ],
+      "options": [
+        "Energia minimă necesară pentru ca o reacție chimică să aibă loc.",
+        "Energia pe care o eliberează o reacție exergonică.",
+        "Energia necesară pentru a crește temperatura reactanților.",
+        "O energie care nu afectează reacțiile chimice."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Ce afirmă principiul lui Le Chatelier?",
+      "sentenceIDs": [
+        27
+      ],
+      "options": [
+        "Sistemul reacționează pentru a compensa o schimbare externă.",
+        "Echilibrul chimic nu se schimbă niciodată.",
+        "O reacție chimică nu poate fi inversată.",
+        "Temperatura nu influențează echilibrul."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Ce se întâmplă când constanta de echilibru K este mai mare decât 1?",
+      "sentenceIDs": [
+        28
+      ],
+      "options": [
+        "Reacția favorizează produsele.",
+        "Reacția nu se desfășoară.",
+        "Reacția favorizează reactanții.",
+        "Echilibrul este instabil."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Care este rolul catalizatorilor?",
+      "sentenceIDs": [
+        14,
+        15
+      ],
+      "options": [
+        "Accelerează reacțiile chimice fără a se consuma.",
+        "Încetinesc reacțiile chimice.",
+        "Consumul de energie în timpul reacției.",
+        "Nu au niciun rol în reacții."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Cum influențează temperatura reacțiile chimice?",
+      "sentenceIDs": [
+        31
+      ],
+      "options": [
+        "Creșterea temperaturii favorizează reacțiile endotermice.",
+        "Reducerea temperaturii favorizează reacțiile endotermice.",
+        "Temperatura nu influențează reacțiile chimice.",
+        "Toate reacțiile sunt afectate la fel de temperatură."
+      ],
+      "correctAnswerIndex": 0
+    }
+  ]
+}

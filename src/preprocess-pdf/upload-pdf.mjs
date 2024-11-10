@@ -1,6 +1,3 @@
-// const multer = require('multer');
-// const path = require('path');
-// const fs = require('fs');
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -14,10 +11,10 @@ const storage = multer.diskStorage({
     const ext = path.extname(file.originalname);
     const fileName = path.basename(file.originalname, ext);
     let fileNameToSave = fileName + '_received' + ext;
-
+    console.log("chiril"); 
     // Check if a file with the same name already exists
     let counter = 1;
-    while (fs.existsSync(path.join('uploads/courses_full', fileNameToSave))) {
+    while (fs.existsSync(path.join('uploads/courses_full/', fileNameToSave))) {
       fileNameToSave = fileName + '_received_' + counter + ext; // Append number to filename
       counter++;
     }

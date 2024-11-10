@@ -1,0 +1,99 @@
+{
+  "questions": [
+    {
+      "question": "Ce este o reacție chimică?",
+      "sentenceIDs": [
+        2
+      ],
+      "options": [
+        "Un proces în care substantele se transformă în altele noi.",
+        "O reacție care nu implică formarea de legături chimice.",
+        "Un tip de reacție care are loc doar la temperaturi foarte scăzute.",
+        "Un proces care nu necesită energie."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Care dintre următoarele reprezintă o reacție de sinteză?",
+      "sentenceIDs": [
+        4
+      ],
+      "options": [
+        "A + B → AB",
+        "AB → A + B",
+        "AB + CD → AD + CB",
+        "A + B → A⁺ + B⁻"
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Ce influențează viteza reacției chimice?",
+      "sentenceIDs": [
+        6,
+        12,
+        13,
+        14,
+        16
+      ],
+      "options": [
+        "Numărul de electroni din reacție.",
+        "Concentrația reactanților.",
+        "Temperatura.",
+        "Ambele variante anterioare."
+      ],
+      "correctAnswerIndex": 3
+    },
+    {
+      "question": "Ce reprezintă energia de activare?",
+      "sentenceIDs": [
+        17
+      ],
+      "options": [
+        "Energia necesară pentru ca reacția chimică să aibă loc.",
+        "Energia necesară pentru a forma legături chimice.",
+        "Energia pe care o eliberează o reacție exergonică.",
+        "Nu este necesară în reacțiile chimice."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Ce afirmă principiul lui Le Chatelier?",
+      "sentenceIDs": [
+        27
+      ],
+      "options": [
+        "Sistemul va reacționa pentru a compensa o schimbare externă.",
+        "Reacțiile se desfășoară întotdeauna într-o direcție.",
+        "Presiunea nu influențează echilibrul chimic.",
+        "Temperatura nu afectează viteza reacției."
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Cum se calculează constanta de echilibru (K)?",
+      "sentenceIDs": [
+        28
+      ],
+      "options": [
+        "K = [C]^c [D]^d / [A]^a [B]^b",
+        "K = [A]^a + [B]^b",
+        "K = [C] + [D]",
+        "K = [A] + [B] / [C] + [D]"
+      ],
+      "correctAnswerIndex": 0
+    },
+    {
+      "question": "Care este semnificația reacțiilor redox?",
+      "sentenceIDs": [
+        34
+      ],
+      "options": [
+        "Implica transferul de electroni între atomii sau ionii.",
+        "Nu implică formarea de legături chimice.",
+        "Sunt irelevante în procesele biologice.",
+        "Nu au nicio importanță în tehnologia industrială."
+      ],
+      "correctAnswerIndex": 0
+    }
+  ]
+}

@@ -6,13 +6,13 @@ import {
   uploadPDF,
   addGrades,
   getLessons,
-  getQuizStatistics,
-  getQuizFeedback,
+  generateQuizAnalysis,
   getQuizzes,
+  getQuizAnalysisReport,
   updateQuiz,
   approveQuiz,
 } from '../controllers/teacherController.js';
-import upload from '../middleware/uploadMiddleware.js';
+import upload from '../src/preprocess-pdf/upload-pdf.mjs';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post('/lessons/:lessonId/grades', protect, authorizeRoles('teacher'), add
 router.get('/lessons/:lessonId/quizzes', protect, authorizeRoles('teacher'), getQuizzes); // Noua rută pentru obținerea quiz-urilor
 router.put('/quizzes/:quizId', protect, authorizeRoles('teacher'), updateQuiz); // Noua rută pentru actualizarea quiz-ului
 router.post('/quizzes/:quizId/approve', protect, authorizeRoles('teacher'), approveQuiz); // Noua rută pentru aprobarea quiz-ului
-router.get('/quizzes/:quizId/statistics', protect, authorizeRoles('teacher'), getQuizStatistics);
-router.get('/quizzes/:quizId/feedback', protect, authorizeRoles('teacher'), getQuizFeedback);
+router.post('/quizzes/:quizId/generate_analyze', protect, authorizeRoles('teacher'), generateQuizAnalysis);
+router.get('/quizzes/:quizId/analyze',protect, authorizeRoles('teacher'), getQuizAnalysisReport);
 
 export default router;

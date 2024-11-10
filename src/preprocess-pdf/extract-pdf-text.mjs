@@ -10,14 +10,15 @@ const extractTextFromPDF = async (pdfPath) => {
     // Verify the full path and check if the file exists
     const absolutePath = path.resolve(pdfPath);
     console.log('Resolved PDF path:', absolutePath);
-
+    console.log("mishaloh0 " , process.cwd()); 
     // Attempt to read the file
-    const data = await fs.readFile(absolutePath);
 
+    const data = await fs.readFile(pdfPath);
+    console.log("mishaloh1");
     // Parse the PDF to extract text
     const pdfData = await pdfParse(data);
     let extractedText = pdfData.text;
-
+    console.log("mishaloh2");
     // Remove all newline characters
     extractedText = extractedText.replace(/\n/g, ' ');
 
@@ -35,6 +36,7 @@ const extractTextFromPDF = async (pdfPath) => {
       sentence: sentence.trim()
     }));
 
+    console.log("mishaloh3");
     // Define the path to save the JSON file in the 'uploads/courses_split' directory
     const fileName = path.basename(pdfPath, '.pdf');
     const jsonFilePath = path.join('uploads', 'courses_split', `${fileName}_split.json`);

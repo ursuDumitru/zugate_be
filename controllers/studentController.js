@@ -74,48 +74,6 @@ export const getLesson = async (req, res) => {
   }
 };
 
-export const submitQuiz = async (req, res) => {
-  try {
-    const quiz = await Quiz.findById(req.params.id);
-    if (!quiz) {
-      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
-    }
-
-    const { answers } = req.body;
-    let score = 0;
-    const processedAnswers = [];
-
-    for (const answer of answers) {
-      const question = quiz.questions.id(answer.questionId);
-      if (question) {
-        const isCorrect = answer.selectedOption === question.correctAnswer;
-        if (isCorrect) {
-          score += 1;
-        }
-        processedAnswers.push({
-          questionId: question._id,
-          selectedOption: answer.selectedOption,
-          isCorrect,
-        });
-      }
-    }
-
-    // Salvează rezultatul în StudentQuizResult
-    const studentQuizResult = new StudentQuizResult({
-      student: req.user.id,
-      quiz: quiz._id,
-      answers: processedAnswers,
-      score,
-    });
-
-    await studentQuizResult.save();
-
-    res.json({ message: 'Quiz trimis', score });
-  } catch (error) {
-    console.error('Eroare la trimiterea quiz-ului:', error);
-    res.status(500).json({ message: 'Eroare de server' });
-  }
-};
 
 export const submitFeedback = async (req, res) => {
   try {
@@ -148,6 +106,66 @@ export const submitFeedback = async (req, res) => {
 
 // În studentController.js
 
+
+
+export const submitQuiz = async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id).populate('lesson');
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
+    }
+
+    const { answers } = req.body;
+    let score = 0;
+    const processedAnswers = [];
+    let correctAnswers = 0;
+
+    for (const answer of answers) {
+      const question = quiz.questions.id(answer.questionId);
+      if (question) {
+        const correctOption = question.options.find(opt => opt.isCorrect);
+        const isCorrect = answer.selectedOption === correctOption.text;
+        if (isCorrect) {
+          score += 1;
+          correctAnswers += 1;
+        }
+        processedAnswers.push({
+          questionId: question._id,
+          questionText: question.questionText,
+          selectedAnswer: answer.selectedOption,
+          correctAnswer: correctOption.text,
+          isCorrect,
+          sentenceIDs: question.sentenceIDs
+        });
+      }
+    }
+
+    // Calculează scorul procentual
+    const totalQuestions = quiz.questions.length;
+    const percentageScore = (score / totalQuestions) * 100;
+
+    // Salvează rezultatul în StudentQuizResult
+    const studentQuizResult = new StudentQuizResult({
+      student: req.user.id,
+      quiz: quiz._id,
+      lesson: quiz.lesson._id,
+      answers: processedAnswers,
+      score: percentageScore,
+    });
+
+    await studentQuizResult.save();
+
+    res.json({ 
+      message: 'Quiz trimis', 
+      score: percentageScore,
+      correctAnswers,
+      totalQuestions
+    });
+  } catch (error) {
+    console.error('Eroare la trimiterea quiz-ului:', error);
+    res.status(500).json({ message: 'Eroare de server' });
+  }
+};
 export const getAttendanceStatus = async (req, res) => {
   try {
     const attendance = await Attendance.findOne({

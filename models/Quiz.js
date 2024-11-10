@@ -1,4 +1,3 @@
-// models/Quiz.js
 import mongoose from 'mongoose';
 
 const QuizSchema = new mongoose.Schema({
@@ -6,11 +5,14 @@ const QuizSchema = new mongoose.Schema({
   questions: [
     {
       questionText: { type: String, required: true },
-      options: [{ text: String }],
-      correctAnswer: { type: String, required: true },
+      sentenceIDs: [{ type: String }], // Adăugat array de sentence IDs
+      options: [{
+        text: String,
+        isCorrect: { type: Boolean, default: false } // Adăugat flag pentru răspunsul corect
+      }],
     },
   ],
-  approved: { type: Boolean, default: false }, // Adăugat aici
+  approved: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const Quiz = mongoose.model('Quiz', QuizSchema);

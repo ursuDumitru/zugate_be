@@ -1,0 +1,158 @@
+[
+  {
+    "sentenceID": 1,
+    "sentence": "Capitolul 6: Reacțiile chimice: cinetică și echilibru chimic  6.1."
+  },
+  {
+    "sentenceID": 2,
+    "sentence": "Introducere în reacțiile chimice  • Definiție:  O reacție chimică este procesul în care substanțele de la început (reactanții) se  transformă în noi substanțe (produse), prin ruperea și formarea legăturilor chimice."
+  },
+  {
+    "sentenceID": 3,
+    "sentence": "Aceste reacții pot fi clasificate în funcție de natura lor (de sinteză, descompunere, de  schimb sau redox) și în funcție de viteza de reacție."
+  },
+  {
+    "sentenceID": 4,
+    "sentence": "• Tipuri de reacții chimice:  o Reacții de sinteză (combinație): A + B → AB  o Reacții de descompunere: AB → A + B  o Reacții de schimb (dublu schimb): AB + CD → AD + CB  o Reacții redox (de reducere-oxidare): A + B → A⁺ + B⁻ (exemplu: oxigenarea  metalelor)."
+  },
+  {
+    "sentenceID": 5,
+    "sentence": "Cinetica reacțiilor chimice  • Definiție:  Cinetica chimică este ramura chimiei care studiază viteza cu care se desfășoară  reacțiile chimice și factorii care o influențează."
+  },
+  {
+    "sentenceID": 6,
+    "sentence": "Viteza de reacție poate fi influențată de  concentrația reactanților, temperatura, prezența catalizatorilor și suprafața de contact  a reactanților."
+  },
+  {
+    "sentenceID": 7,
+    "sentence": "• Viteza reacției:  Viteza de reacție este definită ca modificarea concentratiei unui reactant sau produs în  unitatea de timp."
+  },
+  {
+    "sentenceID": 8,
+    "sentence": "Este exprimată prin formula:  v=−Δ[A]Δtv = \\frac{-\\Delta [A]}{\\Delta t}v=Δt−Δ[A]  unde vvv este viteza, [A][A][A] este concentrația reactantului A, iar Δt\\Delta tΔt este timpul."
+  },
+  {
+    "sentenceID": 9,
+    "sentence": "• Legea vitezei:  Legea vitezei pentru o reacție chimică descrie relația dintre viteza de reacție și  concentrațiile reactanților."
+  },
+  {
+    "sentenceID": 10,
+    "sentence": "De exemplu, pentru reacția A+B→CA + B \\rightarrow  CA+B→C, legea vitezei poate fi:  v=k[A]m[B]nv = k[A]^m[B]^nv=k[A]m[B]n  unde kkk este constanta de viteză, iar mmm și nnn sunt ordinele reacției față de reactanții A și  B."
+  },
+  {
+    "sentenceID": 11,
+    "sentence": "• Factori care influențează viteza reacției:   1."
+  },
+  {
+    "sentenceID": 12,
+    "sentence": "Concentrația reactanților: Creșterea concentrației crește numărul de coliziuni  între molecule, accelerând reacția."
+  },
+  {
+    "sentenceID": 13,
+    "sentence": "Temperatura: Creșterea temperaturii crește energia cinetică a particulelor,  determinând mai multe coliziuni eficiente."
+  },
+  {
+    "sentenceID": 14,
+    "sentence": "Catalizatori: Substanțele care accelerează reacția chimică fără a se consuma."
+  },
+  {
+    "sentenceID": 15,
+    "sentence": "Catalizatorii reduc energia de activare a reacției."
+  },
+  {
+    "sentenceID": 16,
+    "sentence": "Suprafața de contact: Substanțele solide reacționează mai rapid dacă sunt  fragmentate, deoarece au o suprafață mai mare de contact cu ceilalți reactanți."
+  },
+  {
+    "sentenceID": 17,
+    "sentence": "Energia de activare și mecanismele reacțiilor  • Energia de activare:  Energia de activare este energia minimă necesară pentru ca o reacție chimică să aibă  loc."
+  },
+  {
+    "sentenceID": 18,
+    "sentence": "Aceasta este energia care trebuie depusă pentru a depăși bariera energetică a  reacției, permițând reactanților să se transforme în produse."
+  },
+  {
+    "sentenceID": 19,
+    "sentence": "• Diagrama energetică a unei reacții:  Diagrama energetică ilustrează modificările energiei pe parcursul unei reacții chimice."
+  },
+  {
+    "sentenceID": 20,
+    "sentence": "Ea prezintă energia reactanților, energia produselor și energia de activare."
+  },
+  {
+    "sentenceID": 21,
+    "sentence": "o Dacă energia produselor este mai mică decât energia reactanților, reacția este  exergonică (eliberează energie)."
+  },
+  {
+    "sentenceID": 22,
+    "sentence": "o Dacă energia produselor este mai mare, reacția este endergonică (absorbă  energie)."
+  },
+  {
+    "sentenceID": 23,
+    "sentence": "• Mecanismele reacțiilor:  Mecanismul unei reacții chimice reprezintă pașii elementari prin care se desfășoară  reacția."
+  },
+  {
+    "sentenceID": 24,
+    "sentence": "Fiecare pas elementar are propria viteză și energie de activare."
+  },
+  {
+    "sentenceID": 25,
+    "sentence": "De exemplu, o  reacție complexă de două etape poate avea o viteză de reacție determinată de etapa  lentă."
+  },
+  {
+    "sentenceID": 26,
+    "sentence": "Echilibrul chimic  • Definiție și principiul lui Le Chatelier:  Echilibrul chimic apare atunci când concentrațiile reactanților și ale produselor nu mai  variază în timp, deoarece reacția directă și reacția inversă au loc cu aceeași viteză."
+  },
+  {
+    "sentenceID": 27,
+    "sentence": "Principiul lui Le Chatelier afirmă că, atunci când un sistem în echilibru este supus unui  factor extern (schimbare de temperatură, presiune, concentrație), sistemul  reacționează pentru a compensa această schimbare."
+  },
+  {
+    "sentenceID": 28,
+    "sentence": "• Constanta de echilibru (K):  Constanta de echilibru este un raport între concentrațiile produselor și ale reactanților  la echilibru, pentru o reacție de tipul:   aA+bB⇌cC+dDaA + bB \\rightleftharpoons cC + dDaA+bB⇌cC+dD  Constanta de echilibru se scrie:  K=[C]c[D]d[A]a[B]bK = \\frac{[C]^c [D]^d}{[A]^a [B]^b}K=[A]a[B]b[C]c[D]d  o Dacă K>1K > 1K>1, reacția favorizează produsele."
+  },
+  {
+    "sentenceID": 29,
+    "sentence": "o Dacă K<1K < 1K<1, reacția favorizează reactanții."
+  },
+  {
+    "sentenceID": 30,
+    "sentence": "• Factori care influențează echilibrul chimic:  1."
+  },
+  {
+    "sentenceID": 31,
+    "sentence": "Temperatura: Creșterea temperaturii favorizează reacțiile endotermice și descurajează  reacțiile exoterme."
+  },
+  {
+    "sentenceID": 32,
+    "sentence": "Presiunea: Creșterea presiunii favorizează reacțiile care produc mai puține moli de  gaze."
+  },
+  {
+    "sentenceID": 33,
+    "sentence": "Concentrarea reactanților sau produselor: Adăugarea unui reactant sau a unui produs  va deplasa echilibrul pentru a consuma acest factor."
+  },
+  {
+    "sentenceID": 34,
+    "sentence": "Reacțiile de oxidare-reducere și echilibrul redox  • Definiție și importanță:  Reacțiile de oxidare-reducere (redox) implică transferul de electroni între atomii sau  ioni."
+  },
+  {
+    "sentenceID": 35,
+    "sentence": "Un atom sau ion este oxidat (pierde electroni), iar altul este redus (câștigă  electroni)."
+  },
+  {
+    "sentenceID": 36,
+    "sentence": "Aceste reacții sunt esențiale în procese biologice, cum ar fi respirația  celulară și fotosinteza, dar și în tehnologiile industriale, cum ar fi bateriile."
+  },
+  {
+    "sentenceID": 37,
+    "sentence": "• Echilibrul redox:  Echilibrul redox se stabilește între reduceri și oxidări, iar într-un sistem redox, se  stabilește o anumită tensiune electrică, caracterizată prin potențialul de reducere  standard (E°), care influențează direcția reacției."
+  },
+  {
+    "sentenceID": 38,
+    "sentence": "Concluzie  Cinetica și echilibrul chimic sunt esențiale pentru înțelegerea proceselor chimice și  industriale, precum și pentru procesele naturale."
+  },
+  {
+    "sentenceID": 39,
+    "sentence": "Aceste concepte permit prezicerea vitezei și  direcției reacțiilor, esențiale în designul reacțiilor chimice din industrie, laboratoare și  biologie."
+  }
+]
