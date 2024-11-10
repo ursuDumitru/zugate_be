@@ -12,8 +12,10 @@ import {
   getQuizAnalysisReport,
   updateQuiz,
   approveQuiz,
+  getFeedback
 } from '../controllers/teacherController.js';
 import upload from '../src/preprocess-pdf/upload-pdf.mjs';
+import { get } from 'mongoose';
 
 const router = express.Router();
 
@@ -28,4 +30,5 @@ router.post('/quizzes/:quizId/approve', protect, authorizeRoles('teacher'), appr
 router.post('/quizzes/:quizId/generate_analyze', protect, authorizeRoles('teacher'), generateQuizAnalysis);
 router.get('/quizzes/:quizId/analyze',protect, authorizeRoles('teacher'), getQuizAnalysisReport);
 router.get('/lessons/:lessonId/students', protect, authorizeRoles('teacher'), getPresentStudents);
+router.get('/feedback', protect, authorizeRoles('teacher'), getFeedback);
 export default router;
