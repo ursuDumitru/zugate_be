@@ -5,6 +5,7 @@ import {
   createLesson,
   uploadPDF,
   addGrades,
+  getPresentStudents,
   getLessons,
   generateQuizAnalysis,
   getQuizzes,
@@ -26,5 +27,5 @@ router.put('/quizzes/:quizId', protect, authorizeRoles('teacher'), updateQuiz); 
 router.post('/quizzes/:quizId/approve', protect, authorizeRoles('teacher'), approveQuiz); // Noua rută pentru aprobarea quiz-ului
 router.post('/quizzes/:quizId/generate_analyze', protect, authorizeRoles('teacher'), generateQuizAnalysis);
 router.get('/quizzes/:quizId/analyze',protect, authorizeRoles('teacher'), getQuizAnalysisReport);
-
+router.get('/lessons/:lessonId/students', protect, authorizeRoles('teacher'), getPresentStudents);
 export default router;

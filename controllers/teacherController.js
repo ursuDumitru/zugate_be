@@ -9,7 +9,9 @@ import fs from 'fs/promises';
 import AIAnalysisReport from '../models/AIAnalysisReport.js';
 import StudentQuizResult from '../models/StudentQuizResult.js';
 import { OpenAI } from 'openai';
+import Attendance from '../models/Attendance.js';
 import dotenv, { config } from 'dotenv';
+import User from '../models/User.js';
 config();
 
 const openai = new OpenAI({
@@ -215,17 +217,18 @@ export const addGrades = async (req, res) => {
       return res.status(403).json({ message: 'Nu aveți permisiunea de a modifica această lecție' });
     }
 
-    const gradePromises = grades.map(async ({ studentId, grade }) => {
+    const gradePromises = grades.map(async ({ studentId, grade, note }) => {
       const gradeRecord = new Grade({
         student: studentId,
         lesson: lesson._id,
-        grade
+        grade,
+        note // adăugat câmpul note
       });
       return gradeRecord.save();
     });
 
     await Promise.all(gradePromises);
-    res.json({ message: 'Calificative adăugate cu succes' });
+    res.json({ message: 'Calificative și notițe adăugate cu succes' });
   } catch (error) {
     console.error('Eroare la adăugarea calificativelor:', error);
     res.status(500).json({ message: 'Eroare de server' });
@@ -561,5 +564,25 @@ export const getQuizAnalysisReport = async (req, res) => {
       stack: error.stack
     });
     res.status(500).json({ message: 'Eroare de server' });
+  }
+};
+
+export const getPresentStudents = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+
+    // Găsim toate înregistrările de prezență pentru lecția dată unde attended este true
+    const attendanceRecords = await Attendance.find({ lesson: lessonId, attended: true }).populate('student', 'name');
+
+    // Extragem doar informațiile despre student
+    const presentStudents = attendanceRecords.map(record => ({
+      id: record.student._id,
+      name: record.student.name,
+    }));
+
+    res.json(presentStudents);
+  } catch (error) {
+    console.error('Eroare la obținerea studenților prezenți:', error);
+    res.status(500).json({ message: 'Eroare de server la obținerea studenților prezenți' });
   }
 };
