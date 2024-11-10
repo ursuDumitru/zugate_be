@@ -13,7 +13,7 @@ import StudentQuizResult from '../models/StudentQuizResult.js';
 import { OpenAI } from 'openai';
 import Attendance from '../models/Attendance.js';
 import dotenv, { config } from 'dotenv';
-import { getOpenAIFeedbackSummarize } from '../utils/openai';
+
 import User from '../models/User.js';
 config();
 
