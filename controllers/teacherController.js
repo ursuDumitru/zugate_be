@@ -612,7 +612,10 @@ export const getFeedback = async (req, res) => {
       const concatenatedFeedback = feedbacks.map(feedback => feedback.feedbackText).join(' ');
 
       // Utilizează funcția de sumarizare OpenAI
-      const summary = await getOpenAIFeedbackSummarize(concatenatedFeedback);
+      const summaryResponse = await getOpenAIFeedbackSummarize(concatenatedFeedback);
+
+      // Extrage doar textul sumarului din răspunsul OpenAI
+      const summary = summaryResponse.choices[0].message.content.trim();
 
       // Trimite sumarul ca răspuns
       res.status(200).json({ lesson: lessonId, summary });
