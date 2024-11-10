@@ -1,23 +1,18 @@
-// controllers/teacherController.js
 import Lesson from '../models/Lesson.js';
 import Class from '../models/Class.js';
 import { extractTextFromPDF } from '../src/preprocess-pdf/extract-pdf-text.mjs';
 import { getMistralResponse } from '../src/api/mistral-client.mjs';
+import { getMistralFeedback } from '../src/api/mistral-feedback.js';
 import Quiz from '../models/Quiz.js';
 import Grade from '../models/Grade.js';
-import path from 'path';
 import StudentQuizResult from '../models/StudentQuizResult.js';
-
-import { getMistralFeedback } from '../src/api/mistral-feedback.js';
-
-
+import path from 'path';
 
 export const createLesson = async (req, res) => {
   try {
     const { title, description, date, time, className } = req.body;
     const teacherId = req.user.id;
 
-    // Găsim clasa
     const lessonClass = await Class.findOne({ name: className });
     if (!lessonClass) {
       return res.status(404).json({ message: 'Clasa nu a fost găsită' });
@@ -30,10 +25,10 @@ export const createLesson = async (req, res) => {
       time,
       teacher: teacherId,
       class: lessonClass._id,
+      quizzes: [] // Inițializăm cu un array gol
     });
 
     await lesson.save();
-
     res.status(201).json({ message: 'Lecție creată', lessonId: lesson._id });
   } catch (error) {
     console.error('Eroare la crearea lecției:', error);
@@ -41,15 +36,11 @@ export const createLesson = async (req, res) => {
   }
 };
 
-// controllers/teacherController.js
-
-// ... alte importuri și coduri existente
-
 export const uploadPDF = async (req, res) => {
   try {
     const lessonId = req.params.id;
-
     const lesson = await Lesson.findById(lessonId);
+    
     if (!lesson) {
       return res.status(404).json({ message: 'Lecția nu a fost găsită' });
     }
@@ -65,8 +56,8 @@ export const uploadPDF = async (req, res) => {
     const pdfPath = path.join(process.cwd(), 'uploads', req.file.filename);
     const extractedText = await extractTextFromPDF(pdfPath);
 
-    const numQuestions = req.body.numQuestions || 5;
-    const numAnswers = req.body.numAnswers || 4;
+    const numQuestions = parseInt(req.body.numQuestions) || 5;
+    const numAnswers = parseInt(req.body.numAnswers) || 4;
 
     const mistralResponse = await getMistralResponse(extractedText, numQuestions, numAnswers);
 
@@ -77,12 +68,12 @@ export const uploadPDF = async (req, res) => {
         options: q.options.map(opt => ({ text: opt })),
         correctAnswer: q.correctAnswer,
       })),
-      approved: false, // Inițial, quiz-ul nu este aprobat
+      approved: false,
+      originalText: extractedText // Salvăm textul original
     });
 
     await quiz.save();
 
-    // Adăugăm quiz-ul în array-ul quizzes al lecției
     lesson.pdfPath = pdfPath;
     lesson.quizzes.push(quiz._id);
     await lesson.save();
@@ -94,17 +85,12 @@ export const uploadPDF = async (req, res) => {
   }
 };
 
-// controllers/teacherController.js
-
-// ... alte funcții existente
-
-// Obține toate quiz-urile unei lecții
 export const getQuizzes = async (req, res) => {
   try {
-    const lessonId = req.params.lessonId;
+    const { lessonId } = req.params;
     const teacherId = req.user.id;
 
-    const lesson = await Lesson.findById(lessonId).populate('quizzes');
+    const lesson = await Lesson.findById(lessonId);
     if (!lesson) {
       return res.status(404).json({ message: 'Lecția nu a fost găsită' });
     }
@@ -114,7 +100,6 @@ export const getQuizzes = async (req, res) => {
     }
 
     const quizzes = await Quiz.find({ lesson: lessonId });
-
     res.json({ quizzes });
   } catch (error) {
     console.error('Eroare la obținerea quiz-urilor:', error);
@@ -122,10 +107,9 @@ export const getQuizzes = async (req, res) => {
   }
 };
 
-// Actualizează un quiz
 export const updateQuiz = async (req, res) => {
   try {
-    const quizId = req.params.quizId;
+    const { quizId } = req.params;
     const teacherId = req.user.id;
     const { questions } = req.body;
 
@@ -138,18 +122,14 @@ export const updateQuiz = async (req, res) => {
       return res.status(403).json({ message: 'Nu aveți permisiunea de a modifica acest quiz' });
     }
 
-    // Actualizăm întrebările
     quiz.questions = questions.map(q => ({
       questionText: q.questionText,
-      options: q.options.map(opt => ({ text: opt })),
+      options: q.options,
       correctAnswer: q.correctAnswer,
     }));
-
-    // Resetăm starea de aprobare dacă întrebările sunt modificate
     quiz.approved = false;
 
     await quiz.save();
-
     res.json({ message: 'Quiz-ul a fost actualizat', quiz });
   } catch (error) {
     console.error('Eroare la actualizarea quiz-ului:', error);
@@ -157,10 +137,9 @@ export const updateQuiz = async (req, res) => {
   }
 };
 
-// Aprobă un quiz
 export const approveQuiz = async (req, res) => {
   try {
-    const quizId = req.params.quizId;
+    const { quizId } = req.params;
     const teacherId = req.user.id;
 
     const quiz = await Quiz.findById(quizId).populate('lesson');
@@ -174,43 +153,9 @@ export const approveQuiz = async (req, res) => {
 
     quiz.approved = true;
     await quiz.save();
-
     res.json({ message: 'Quiz-ul a fost aprobat', quiz });
   } catch (error) {
     console.error('Eroare la aprobarea quiz-ului:', error);
-    res.status(500).json({ message: 'Eroare de server' });
-  }
-};
-
-export const addGrades = async (req, res) => {
-  try {
-    const { lessonId } = req.params;
-    const { grades } = req.body;
-
-    const lesson = await Lesson.findById(lessonId);
-    if (!lesson) {
-      return res.status(404).json({ message: 'Lecția nu a fost găsită' });
-    }
-
-    if (lesson.teacher.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Nu aveți permisiunea de a modifica această lecție' });
-    }
-
-    for (const gradeEntry of grades) {
-      const { studentId, grade } = gradeEntry;
-
-      const gradeRecord = new Grade({
-        student: studentId,
-        lesson: lesson._id,
-        grade,
-      });
-
-      await gradeRecord.save();
-    }
-
-    res.json({ message: 'Calificative adăugate' });
-  } catch (error) {
-    console.error('Eroare la adăugarea calificativelor:', error);
     res.status(500).json({ message: 'Eroare de server' });
   }
 };
@@ -229,7 +174,6 @@ export const getLessons = async (req, res) => {
       return res.status(400).json({ message: 'Data este invalidă' });
     }
 
-    // Găsim lecțiile pentru profesorul curent și data specificată
     const lessons = await Lesson.find({
       teacher: teacherId,
       date: {
@@ -245,110 +189,78 @@ export const getLessons = async (req, res) => {
   }
 };
 
-// Funcție internă pentru a obține statisticile fără a trimite răspuns HTTP
-const getQuizStatisticsInternal = async (quizId, teacherId) => {
-  try {
-    // Verificăm dacă quiz-ul există și aparține profesorului curent
-    const quiz = await Quiz.findById(quizId).populate('lesson');
-    if (!quiz) {
-      return { error: true, status: 404, message: 'Quiz-ul nu a fost găsit' };
-    }
-
-    if (quiz.lesson.teacher.toString() !== teacherId) {
-      return { error: true, status: 403, message: 'Nu aveți permisiunea de a accesa acest quiz' };
-    }
-
-    // Obținem toate rezultatele elevilor pentru acest quiz
-    const results = await StudentQuizResult.find({ quiz: quizId });
-
-    // Inițializăm un obiect pentru a stoca statisticile
-    const questionStats = {};
-
-    // Parcurgem toate rezultatele
-    for (const result of results) {
-      for (const answer of result.answers) {
-        const questionId = answer.questionId.toString();
-
-        if (!questionStats[questionId]) {
-          questionStats[questionId] = { correct: 0, incorrect: 0 };
-        }
-
-        if (answer.isCorrect) {
-          questionStats[questionId].correct += 1;
-        } else {
-          questionStats[questionId].incorrect += 1;
-        }
-      }
-    }
-
-    // Obținem textul întrebărilor pentru a le include în statistici
-    const quizData = await Quiz.findById(quizId);
-    const questionsWithStats = quizData.questions.map((question) => {
-      const stats = questionStats[question._id.toString()] || { correct: 0, incorrect: 0 };
-      return {
-        questionId: question._id,
-        questionText: question.questionText,
-        correct: stats.correct,
-        incorrect: stats.incorrect,
-      };
-    });
-
-    return { quizTitle: quizData.lesson.title, questions: questionsWithStats };
-  } catch (error) {
-    console.error('Eroare la obținerea statisticilor quiz-ului:', error);
-    return { error: true, status: 500, message: 'Eroare de server' };
-  }
-};
 export const getQuizStatistics = async (req, res) => {
   try {
     const { quizId } = req.params;
+    const teacherId = req.user.id;
 
-    // Verificăm dacă quiz-ul există și aparține profesorului curent
     const quiz = await Quiz.findById(quizId).populate('lesson');
     if (!quiz) {
       return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
     }
 
-    if (quiz.lesson.teacher.toString() !== req.user.id) {
+    if (quiz.lesson.teacher.toString() !== teacherId) {
       return res.status(403).json({ message: 'Nu aveți permisiunea de a accesa acest quiz' });
     }
 
-    // Obținem toate rezultatele elevilor pentru acest quiz
     const results = await StudentQuizResult.find({ quiz: quizId });
-
-    // Inițializăm un obiect pentru a stoca statisticile
     const questionStats = {};
 
-    // Parcurgem toate rezultatele
+    // Procesăm rezultatele pentru fiecare întrebare
     for (const result of results) {
       for (const answer of result.answers) {
         const questionId = answer.questionId.toString();
-
+        
         if (!questionStats[questionId]) {
-          questionStats[questionId] = { correct: 0, incorrect: 0 };
+          questionStats[questionId] = {
+            correct: 0,
+            incorrect: 0,
+            wrongAnswers: {}
+          };
         }
 
         if (answer.isCorrect) {
           questionStats[questionId].correct += 1;
         } else {
           questionStats[questionId].incorrect += 1;
+          // Urmărim răspunsurile greșite specifice
+          if (!questionStats[questionId].wrongAnswers[answer.selectedAnswer]) {
+            questionStats[questionId].wrongAnswers[answer.selectedAnswer] = 0;
+          }
+          questionStats[questionId].wrongAnswers[answer.selectedAnswer] += 1;
         }
       }
     }
 
-    // Obținem textul întrebărilor pentru a le include în statistici
-    const quizData = await Quiz.findById(quizId);
-    const questionsWithStats = quizData.questions.map((question) => {
-      const stats = questionStats[question._id.toString()] || { correct: 0, incorrect: 0 };
+    // Formatăm statisticile pentru răspuns
+    const questionsWithStats = quiz.questions.map((question) => {
+      const stats = questionStats[question._id.toString()] || {
+        correct: 0,
+        incorrect: 0,
+        wrongAnswers: {}
+      };
+
+      // Găsim cele mai frecvente răspunsuri greșite
+      const commonWrongAnswers = Object.entries(stats.wrongAnswers)
+        .sort(([, a], [, b]) => b - a)
+        .map(([answer, count]) => ({
+          answer,
+          count
+        }));
+
       return {
         questionId: question._id,
         questionText: question.questionText,
         correct: stats.correct,
         incorrect: stats.incorrect,
+        commonWrongAnswers
       };
     });
 
-    res.json({ quizId, questions: questionsWithStats });
+    res.json({
+      quizId,
+      questions: questionsWithStats,
+    });
   } catch (error) {
     console.error('Eroare la obținerea statisticilor quiz-ului:', error);
     res.status(500).json({ message: 'Eroare de server' });
@@ -358,21 +270,111 @@ export const getQuizStatistics = async (req, res) => {
 export const getQuizFeedback = async (req, res) => {
   try {
     const { quizId } = req.params;
+    const teacherId = req.user.id;
 
-    // Obținem statisticile quiz-ului folosind funcția creată anterior
-    const statisticsResponse = await getQuizStatisticsInternal(quizId, req.user.id);
-    if (statisticsResponse.error) {
-      return res.status(statisticsResponse.status).json({ message: statisticsResponse.message });
+    // Găsim quiz-ul și verificăm permisiunile
+    const quiz = await Quiz.findById(quizId).populate('lesson');
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
     }
 
-    const { quizTitle, questions } = statisticsResponse;
+    if (quiz.lesson.teacher.toString() !== teacherId) {
+      return res.status(403).json({ message: 'Nu aveți permisiunea de a accesa acest quiz' });
+    }
 
-    // Trimitem datele către Mistral AI
-    const feedback = await getMistralFeedback(quizTitle, questions);
+    // Obținem textul original și rezultatele
+    const lesson = await Lesson.findById(quiz.lesson._id);
+    const results = await StudentQuizResult.find({ quiz: quizId });
+    
+    // Procesăm statisticile
+    const questionStats = {};
+    for (const result of results) {
+      for (const answer of result.answers) {
+        const questionId = answer.questionId.toString();
+        if (!questionStats[questionId]) {
+          questionStats[questionId] = {
+            correct: 0,
+            incorrect: 0,
+            wrongAnswers: {}
+          };
+        }
+
+        if (answer.isCorrect) {
+          questionStats[questionId].correct += 1;
+        } else {
+          questionStats[questionId].incorrect += 1;
+          if (!questionStats[questionId].wrongAnswers[answer.selectedAnswer]) {
+            questionStats[questionId].wrongAnswers[answer.selectedAnswer] = 0;
+          }
+          questionStats[questionId].wrongAnswers[answer.selectedAnswer] += 1;
+        }
+      }
+    }
+
+    // Formatăm datele pentru Mistral
+    const questionsWithStats = quiz.questions.map((question) => {
+      const stats = questionStats[question._id.toString()] || {
+        correct: 0,
+        incorrect: 0,
+        wrongAnswers: {}
+      };
+
+      const commonWrongAnswers = Object.entries(stats.wrongAnswers)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([answer]) => answer);
+
+      return {
+        questionId: question._id,
+        questionText: question.questionText,
+        correct: stats.correct,
+        incorrect: stats.incorrect,
+        commonWrongAnswers
+      };
+    });
+
+    // Obținem feedback-ul de la Mistral
+    const feedback = await getMistralFeedback(
+      lesson.title,
+      questionsWithStats,
+      quiz.originalText // Folosim textul original salvat în quiz
+    );
 
     res.json({ feedback });
   } catch (error) {
-    console.error('Eroare la obținerea feedback-ului de la Mistral AI:', error);
+    console.error('Eroare la obținerea feedback-ului:', error);
+    res.status(500).json({ message: 'Eroare de server' });
+  }
+};
+
+export const addGrades = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const { grades } = req.body;
+    const teacherId = req.user.id;
+
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lecția nu a fost găsită' });
+    }
+
+    if (lesson.teacher.toString() !== teacherId) {
+      return res.status(403).json({ message: 'Nu aveți permisiunea de a modifica această lecție' });
+    }
+
+    const gradePromises = grades.map(async ({ studentId, grade }) => {
+      const gradeRecord = new Grade({
+        student: studentId,
+        lesson: lesson._id,
+        grade
+      });
+      return gradeRecord.save();
+    });
+
+    await Promise.all(gradePromises);
+    res.json({ message: 'Calificative adăugate cu succes' });
+  } catch (error) {
+    console.error('Eroare la adăugarea calificativelor:', error);
     res.status(500).json({ message: 'Eroare de server' });
   }
 };
