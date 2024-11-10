@@ -41,6 +41,10 @@ export const createLesson = async (req, res) => {
   }
 };
 
+// controllers/teacherController.js
+
+// ... alte importuri și coduri existente
+
 export const uploadPDF = async (req, res) => {
   try {
     const lessonId = req.params.id;
@@ -73,17 +77,107 @@ export const uploadPDF = async (req, res) => {
         options: q.options.map(opt => ({ text: opt })),
         correctAnswer: q.correctAnswer,
       })),
+      approved: false, // Inițial, quiz-ul nu este aprobat
     });
 
     await quiz.save();
 
+    // Adăugăm quiz-ul în array-ul quizzes al lecției
     lesson.pdfPath = pdfPath;
-    lesson.quiz = quiz._id;
+    lesson.quizzes.push(quiz._id);
     await lesson.save();
 
     res.json({ message: 'PDF încărcat și quiz generat', quizId: quiz._id });
   } catch (error) {
     console.error('Eroare la încărcarea PDF-ului:', error);
+    res.status(500).json({ message: 'Eroare de server' });
+  }
+};
+
+// controllers/teacherController.js
+
+// ... alte funcții existente
+
+// Obține toate quiz-urile unei lecții
+export const getQuizzes = async (req, res) => {
+  try {
+    const lessonId = req.params.lessonId;
+    const teacherId = req.user.id;
+
+    const lesson = await Lesson.findById(lessonId).populate('quizzes');
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lecția nu a fost găsită' });
+    }
+
+    if (lesson.teacher.toString() !== teacherId) {
+      return res.status(403).json({ message: 'Nu aveți permisiunea de a accesa această lecție' });
+    }
+
+    const quizzes = await Quiz.find({ lesson: lessonId });
+
+    res.json({ quizzes });
+  } catch (error) {
+    console.error('Eroare la obținerea quiz-urilor:', error);
+    res.status(500).json({ message: 'Eroare de server' });
+  }
+};
+
+// Actualizează un quiz
+export const updateQuiz = async (req, res) => {
+  try {
+    const quizId = req.params.quizId;
+    const teacherId = req.user.id;
+    const { questions } = req.body;
+
+    const quiz = await Quiz.findById(quizId).populate('lesson');
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
+    }
+
+    if (quiz.lesson.teacher.toString() !== teacherId) {
+      return res.status(403).json({ message: 'Nu aveți permisiunea de a modifica acest quiz' });
+    }
+
+    // Actualizăm întrebările
+    quiz.questions = questions.map(q => ({
+      questionText: q.questionText,
+      options: q.options.map(opt => ({ text: opt })),
+      correctAnswer: q.correctAnswer,
+    }));
+
+    // Resetăm starea de aprobare dacă întrebările sunt modificate
+    quiz.approved = false;
+
+    await quiz.save();
+
+    res.json({ message: 'Quiz-ul a fost actualizat', quiz });
+  } catch (error) {
+    console.error('Eroare la actualizarea quiz-ului:', error);
+    res.status(500).json({ message: 'Eroare de server' });
+  }
+};
+
+// Aprobă un quiz
+export const approveQuiz = async (req, res) => {
+  try {
+    const quizId = req.params.quizId;
+    const teacherId = req.user.id;
+
+    const quiz = await Quiz.findById(quizId).populate('lesson');
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
+    }
+
+    if (quiz.lesson.teacher.toString() !== teacherId) {
+      return res.status(403).json({ message: 'Nu aveți permisiunea de a aproba acest quiz' });
+    }
+
+    quiz.approved = true;
+    await quiz.save();
+
+    res.json({ message: 'Quiz-ul a fost aprobat', quiz });
+  } catch (error) {
+    console.error('Eroare la aprobarea quiz-ului:', error);
     res.status(500).json({ message: 'Eroare de server' });
   }
 };
@@ -121,7 +215,35 @@ export const addGrades = async (req, res) => {
   }
 };
 
+export const getLessons = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const teacherId = req.user.id;
 
+    if (!date) {
+      return res.status(400).json({ message: 'Data este necesară' });
+    }
+
+    const formattedDate = new Date(date);
+    if (isNaN(formattedDate)) {
+      return res.status(400).json({ message: 'Data este invalidă' });
+    }
+
+    // Găsim lecțiile pentru profesorul curent și data specificată
+    const lessons = await Lesson.find({
+      teacher: teacherId,
+      date: {
+        $gte: new Date(formattedDate.setHours(0, 0, 0, 0)),
+        $lte: new Date(formattedDate.setHours(23, 59, 59, 999)),
+      },
+    }).populate('class');
+
+    res.json(lessons);
+  } catch (error) {
+    console.error('Eroare la obținerea lecțiilor:', error);
+    res.status(500).json({ message: 'Eroare de server' });
+  }
+};
 
 // Funcție internă pentru a obține statisticile fără a trimite răspuns HTTP
 const getQuizStatisticsInternal = async (quizId, teacherId) => {

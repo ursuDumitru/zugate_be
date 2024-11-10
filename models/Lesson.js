@@ -9,7 +9,7 @@ const LessonSchema = new mongoose.Schema({
   teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   class: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true },
   pdfPath: { type: String },
-  quiz: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' },
+  quizzes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' }], // Modificat aici
 });
 
 const Lesson = mongoose.model('Lesson', LessonSchema);

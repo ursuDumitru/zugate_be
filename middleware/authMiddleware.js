@@ -4,9 +4,12 @@ import jwt from 'jsonwebtoken';
 export const protect = (req, res, next) => {
   let token = req.headers.authorization;
 
-  if (token && token.startsWith('Bearer')) {
+  console.log('Header Authorization:', token); // Debugging
+
+  if (token && token.startsWith('Bearer ')) {
     token = token.split(' ')[1];
   } else {
+    console.error('Tokenul lipsește sau nu începe cu Bearer');
     return res.status(401).json({ message: 'Nu ești autentificat' });
   }
 
