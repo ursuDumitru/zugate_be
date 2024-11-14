@@ -12,6 +12,6 @@ router.post('/quizzes/:id/submit', protect, authorizeRoles('student'), submitQui
 router.post('/lessons/:id/feedback', protect, authorizeRoles('student'), submitFeedback);
 router.post('/lessons/:id/attendance', protect, authorizeRoles('student'), markAttendance);
 router.get('/quizzes/:id', protect, authorizeRoles('student'), getQuiz);
-router.post('/lessons/:id/attendance', protect, authorizeRoles('student'), getAttendanceStatus);
+router.get('/lessons/:id/attendance', protect, authorizeRoles('student'), getAttendanceStatus);
 router.get('/lessons/:lessonId/grade', protect, authorizeRoles('student'), getGrade); // Noua rută pentru preluarea notei
 export default router;
