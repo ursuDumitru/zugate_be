@@ -255,7 +255,7 @@ export const generateQuizAnalysis = async (req, res) => {
       return res.status(403).json({ message: 'Nu aveți permisiunea de a analiza acest quiz' });
     }
 
-    // Ștergem orice raport existent pentru acest quiz
+    // Ștergem raportul existent
     await AIAnalysisReport.deleteOne({ quiz: quizId });
 
     // Obținem rezultatele
@@ -264,21 +264,35 @@ export const generateQuizAnalysis = async (req, res) => {
       return res.status(400).json({ message: 'Nu există rezultate pentru acest quiz' });
     }
 
+    console.log('Results found:', results.length);
+    console.log('Sample result:', JSON.stringify(results[0], null, 2));
+
     // Calculăm statistici
-    const totalScore = results.reduce((acc, curr) => acc + curr.score, 0);
+    const totalScore = results.reduce((acc, curr) => acc + (curr.score || 0), 0);
     const averageScore = (totalScore / results.length).toFixed(2);
 
     // Analizăm întrebările
     const questionAnalysis = quiz.questions.map((question, qIndex) => {
-      const questionResults = results.map(r => r.answers[qIndex]);
-      const correctAnswers = questionResults.filter(a => a.isCorrect).length;
+      // Verificăm că avem răspunsuri pentru această întrebare
+      const questionResults = results.map(r => {
+        const answer = r.answers && r.answers[qIndex];
+        if (!answer) {
+          console.log(`No answer found for question ${qIndex} in result:`, r);
+          return { isCorrect: false, selectedAnswer: null };
+        }
+        return answer;
+      });
+
+      const correctAnswers = questionResults.filter(a => a?.isCorrect).length;
       const incorrectAnswers = questionResults.length - correctAnswers;
 
       // Analiză răspunsuri greșite
       const wrongAnswers = questionResults
-        .filter(a => !a.isCorrect)
+        .filter(a => !a?.isCorrect && a?.selectedAnswer)
         .reduce((acc, curr) => {
-          acc[curr.selectedAnswer] = (acc[curr.selectedAnswer] || 0) + 1;
+          if (curr.selectedAnswer) {
+            acc[curr.selectedAnswer] = (acc[curr.selectedAnswer] || 0) + 1;
+          }
           return acc;
         }, {});
 
@@ -292,9 +306,12 @@ export const generateQuizAnalysis = async (req, res) => {
         questionText: question.questionText,
         correctAnswers,
         incorrectAnswers,
-        commonWrongAnswers
+        commonWrongAnswers,
+        totalAnswers: questionResults.length
       };
     });
+
+    console.log('Question analysis completed:', JSON.stringify(questionAnalysis, null, 2));
 
     // Pregătim date pentru OpenAI
     const analysisData = {
@@ -302,9 +319,9 @@ export const generateQuizAnalysis = async (req, res) => {
       averageScore: parseFloat(averageScore),
       questionAnalysis,
       correctAnswerRate: questionAnalysis.map(q => 
-        (q.correctAnswers / (q.correctAnswers + q.incorrectAnswers)) * 100
+        ((q.correctAnswers / (q.correctAnswers + q.incorrectAnswers)) * 100) || 0
       ),
-      originalText: quiz.originalText
+      originalText: quiz.originalText || ''
     };
 
     // Generăm analiza OpenAI
@@ -316,20 +333,61 @@ export const generateQuizAnalysis = async (req, res) => {
       lesson: quiz.lesson._id,
       totalStudents: results.length,
       averageScore: parseFloat(averageScore),
-      analysisPoints: openAIResponse.analysisPoints,
-      recommendedFocus: openAIResponse.recommendedFocus,
-      conceptAnalysis: openAIResponse.conceptAnalysis,
+      analysisPoints: openAIResponse.analysisPoints || [{
+        point: "Analiză de bază",
+        description: "O analiză detaliată nu a putut fi generată"
+      }],
+      recommendedFocus: openAIResponse.recommendedFocus || ["Revizuiți materialul de bază"],
       generatedAt: new Date()
     });
 
     await aiReport.save();
     
-    res.json({ message: 'Analiză generată cu succes', report: aiReport });
+    res.json({ 
+      message: 'Analiză generată cu succes', 
+      report: aiReport 
+    });
+
   } catch (error) {
     console.error('Error in generateQuizAnalysis:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Eroare de server',
+      error: error.message 
+    });
+  }
+};
+
+export const getQuizAnalysisReport = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const teacherId = req.user.id;
+
+    const quiz = await Quiz.findById(quizId).populate('lesson');
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
+    }
+
+    if (quiz.lesson.teacher.toString() !== teacherId) {
+      return res.status(403).json({ message: 'Nu aveți permisiunea de a accesa această analiză' });
+    }
+
+    const report = await AIAnalysisReport.findOne({ quiz: quizId });
+    if (!report) {
+      return res.status(404).json({ 
+        message: 'Raportul de analiză nu a fost găsit',
+        status: 'NOT_FOUND'
+      });
+    }
+  
+    res.json({ report });
+  } catch (error) {
+    console.error('Error in getQuizAnalysisReport:', error);
     res.status(500).json({ message: 'Eroare de server' });
   }
 };
+
+
 const getOpenAIResponseForAnalysis = async (analysisData) => {
   console.log('=================== START getOpenAIResponseForAnalysis ===================');
   console.log('Analysis data received:', {
@@ -431,61 +489,7 @@ const getOpenAIResponseForAnalysis = async (analysisData) => {
   }
 };
 
-export const getQuizAnalysisReport = async (req, res) => {
-  console.log('=================== START getQuizAnalysisReport ===================');
-  console.log('Request params:', req.params);
-  console.log('Teacher ID:', req.user?.id);
 
-  try {
-    const { quizId } = req.params;
-    const teacherId = req.user.id;
-
-    console.log('[1] Searching for quiz:', { quizId });
-    const quiz = await Quiz.findById(quizId).populate('lesson');
-    console.log('[2] Quiz search result:', {
-      found: !!quiz,
-      lessonId: quiz?.lesson?._id,
-      teacherId: quiz?.lesson?.teacher?.toString()
-    });
-
-    if (!quiz) {
-      console.log('[ERROR] Quiz not found');
-      return res.status(404).json({ message: 'Quiz-ul nu a fost găsit' });
-    }
-
-    if (quiz.lesson.teacher.toString() !== teacherId) {
-      console.log('[ERROR] Permission denied', {
-        quizTeacherId: quiz.lesson.teacher.toString(),
-        requestTeacherId: teacherId
-      });
-      return res.status(403).json({ message: 'Nu aveți permisiunea de a accesa această analiză' });
-    }
-
-    console.log('[3] Searching for analysis report');
-    const report = await AIAnalysisReport.findOne({ quiz: quizId });
-    console.log('[4] Report search result:', {
-      found: !!report,
-      reportId: report?._id,
-      generatedAt: report?.generatedAt
-    });
-
-    if (!report) {
-      console.log('[ERROR] Report not found');
-      return res.status(404).json({ message: 'Raportul de analiză nu a fost găsit' });
-    }
-  
-    res.json({ report });
-    console.log('=================== END getQuizAnalysisReport ===================');
-  } catch (error) {
-    console.error('=================== ERROR in getQuizAnalysisReport ===================');
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
-    res.status(500).json({ message: 'Eroare de server' });
-  }
-};
 
 
 export const getPresentStudents = async (req, res) => {
