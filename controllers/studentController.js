@@ -193,16 +193,20 @@ export const markAttendance = async (req, res) => {
     });
 
     if (attendance) {
-      // Dacă există deja o prezență, o actualizăm (toggle)
-      attendance.attended = !attendance.attended;
-      await attendance.save();
-      return res.json({ 
-        message: attendance.attended ? 'Prezență marcată cu succes' : 'Prezență retrasă cu succes',
-        attended: attendance.attended 
-      });
+      if (attendance.attended) {
+        return res.status(400).json({ message: 'Prezența a fost deja marcată și nu poate fi modificată.' });
+      } else {
+        // În cazul în care înregistrarea există dar nu este marcată ca prezentă, permite marcarea
+        attendance.attended = true;
+        await attendance.save();
+        return res.json({ 
+          message: 'Prezență marcată cu succes', 
+          attended: attendance.attended 
+        });
+      }
     }
 
-    // Dacă nu există, cream o nouă prezență
+    // Dacă nu există, creează o nouă înregistrare cu prezența marcată
     attendance = new Attendance({
       student: req.user.id,
       lesson: lesson._id,
