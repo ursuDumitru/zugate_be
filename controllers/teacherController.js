@@ -570,17 +570,38 @@ export const getQuizAnalysisReport = async (req, res) => {
   }
 };
 
+
 export const getPresentStudents = async (req, res) => {
   try {
     const { lessonId } = req.params;
 
     // Găsim toate înregistrările de prezență pentru lecția dată unde attended este true
-    const attendanceRecords = await Attendance.find({ lesson: lessonId, attended: true }).populate('student', 'name');
+    const attendanceRecords = await Attendance.find({ lesson: lessonId, attended: true })
+      .populate('student', 'name') // Populăm doar numele studentului
+      .lean();
 
-    // Extragem doar informațiile despre student
+    const studentIds = attendanceRecords.map(record => record.student._id);
+
+    // Găsim notele pentru studenții prezenți la lecția respectivă
+    const grades = await Grade.find({ lesson: lessonId, student: { $in: studentIds } })
+      .lean();
+
+    // Creăm un map pentru a accesa rapid gradele după ID-ul studentului
+    const gradeMap = grades.reduce((acc, grade) => {
+      acc[grade.student.toString()] = {
+        grade: grade.grade,
+        note: grade.note,
+      };
+      return acc;
+    }, {});
+
+    // Extragem informațiile necesare pentru frontend
     const presentStudents = attendanceRecords.map(record => ({
       id: record.student._id,
       name: record.student.name,
+      grade: gradeMap[record.student._id.toString()]?.grade || null,
+      note: gradeMap[record.student._id.toString()]?.note || null,
+      attendanceDate: record.date, // Data prezenței
     }));
 
     res.json(presentStudents);
