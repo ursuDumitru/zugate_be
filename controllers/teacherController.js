@@ -255,7 +255,7 @@ export const generateQuizAnalysis = async (req, res) => {
       return res.status(403).json({ message: 'Nu aveți permisiunea de a analiza acest quiz' });
     }
 
-    // Ștergem raportul existent dacă există
+    // Ștergem orice raport existent pentru acest quiz
     await AIAnalysisReport.deleteOne({ quiz: quizId });
 
     // Obținem rezultatele
@@ -264,14 +264,39 @@ export const generateQuizAnalysis = async (req, res) => {
       return res.status(400).json({ message: 'Nu există rezultate pentru acest quiz' });
     }
 
-    // Restul logicii rămâne la fel...
+    // Calculăm statistici
     const totalScore = results.reduce((acc, curr) => acc + curr.score, 0);
     const averageScore = (totalScore / results.length).toFixed(2);
 
+    // Analizăm întrebările
     const questionAnalysis = quiz.questions.map((question, qIndex) => {
-      // ... logica existentă pentru analiza întrebărilor
+      const questionResults = results.map(r => r.answers[qIndex]);
+      const correctAnswers = questionResults.filter(a => a.isCorrect).length;
+      const incorrectAnswers = questionResults.length - correctAnswers;
+
+      // Analiză răspunsuri greșite
+      const wrongAnswers = questionResults
+        .filter(a => !a.isCorrect)
+        .reduce((acc, curr) => {
+          acc[curr.selectedAnswer] = (acc[curr.selectedAnswer] || 0) + 1;
+          return acc;
+        }, {});
+
+      const commonWrongAnswers = Object.entries(wrongAnswers)
+        .map(([answer, count]) => ({ answer, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+
+      return {
+        questionId: question._id,
+        questionText: question.questionText,
+        correctAnswers,
+        incorrectAnswers,
+        commonWrongAnswers
+      };
     });
 
+    // Pregătim date pentru OpenAI
     const analysisData = {
       totalStudents: results.length,
       averageScore: parseFloat(averageScore),
@@ -282,8 +307,10 @@ export const generateQuizAnalysis = async (req, res) => {
       originalText: quiz.originalText
     };
 
+    // Generăm analiza OpenAI
     const openAIResponse = await getOpenAIResponseForAnalysis(analysisData);
     
+    // Creăm și salvăm noul raport
     const aiReport = new AIAnalysisReport({
       quiz: quizId,
       lesson: quiz.lesson._id,
