@@ -86,7 +86,8 @@ export const loginUser = async (req, res) => {
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ token });
+    // Returnăm token-ul și numele utilizatorului
+    res.json({ token, name: user.name });
   } catch (error) {
     console.error('Eroare la autentificare:', error);
     res.status(500).json({ message: 'Eroare de server' });
